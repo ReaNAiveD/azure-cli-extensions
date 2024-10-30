@@ -69,7 +69,7 @@ def add_new_lines(long_phrase, line_min=None, tolerance=TOLERANCE):
 
 
 # pylint: disable=too-many-instance-attributes
-class GatherCommands(object):
+class GatherCommands:
     """ grabs all the cached commands from files """
     def __init__(self, config):
         # everything that is completable

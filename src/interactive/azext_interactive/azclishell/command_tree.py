@@ -4,7 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 
-class CommandTree(object):
+class CommandTree:
     """ a command tree """
     def __init__(self, data, children=None):
         self.data = data

@@ -97,11 +97,10 @@ def whether_continue_module_loading():
     return continue_loading
 
 
-# pylint: disable=too-many-instance-attributes
-class AzInteractiveShell(object):
+# pylint: disable=too-many-instance-attributes, too-many-public-methods
+class AzInteractiveShell:
 
-    def __init__(self, cli_ctx, style=None, completer=None,
-                 lexer=None, history=None,
+    def __init__(self, cli_ctx, style=None, *, completer=None, lexer=None, history=None,
                  input_custom=sys.stdin, output_custom=None,
                  user_feedback=False, intermediate_sleep=.25, final_sleep=4):
 
@@ -169,9 +168,10 @@ class AzInteractiveShell(object):
             print("\nAny comments or concerns? You can use the \'feedback\' command!" +
                   " We would greatly appreciate it.\n")
         if self.cli_ctx.config.getboolean("interactive", "enable_recommender", fallback=True):
-            print(
-                "\nA new Recommender is added which can make the completion ability more intelligent and provide the scenario completion!\n"
-                "If you want to disable this feature, you can use 'az config set interactive.enable_recommender=False' to disable it.\n")
+            print("\nA new Recommender is added which can make the completion ability more intelligent and "
+                  "provide the scenario completion!\n"
+                  "If you want to disable this feature, "
+                  "you can use 'az config set interactive.enable_recommender=False' to disable it.\n")
 
         self.cli_ctx.data["az_interactive_active"] = True
         self.run()
@@ -254,8 +254,7 @@ class AzInteractiveShell(object):
         if self.config.get_boolean('Layout', 'command_description') \
                 and self.config.get_boolean('Layout', 'param_description'):
             return (cols - 1) // 2
-        else:
-            return cols
+        return cols
 
     def _wrap_desc_param(self, content, max_lines=4):
         width = self._desc_param_buffer_width()
@@ -552,11 +551,10 @@ class AzInteractiveShell(object):
                 answer = answer.text
                 if answer.strip('\n') == cmd.strip('\n'):
                     continue
-                else:
-                    if len(answer.split()) > 1:
-                        start_index += 1
-                        cmd += " " + answer.split()[-1] + " " + \
-                               u' '.join(text.split()[start_index:start_index + 1])
+                if len(answer.split()) > 1:
+                    start_index += 1
+                    cmd += " " + answer.split()[-1] + " " + \
+                           u' '.join(text.split()[start_index:start_index + 1])
             self.completer.enable_scenario_recommender(True)
             example_cli.exit()
             del example_cli
@@ -685,7 +683,7 @@ class AzInteractiveShell(object):
         if self.recommender.cur_thread.result is not None:
             results = self.recommender.cur_thread.result
             # If the result is a string, it means the search thread has encountered an error
-            if type(results) is str:
+            if isinstance(results, str):
                 print_styled_text([(Style.WARNING, results)])
                 self.recommender.cur_thread.result = []
                 return
@@ -789,6 +787,8 @@ class AzInteractiveShell(object):
                     result = self.last.result
                 elif args[0].startswith(query_symbol):
                     result = jmespath.search(args[0][symbol_len:], self.last.result)
+                else:
+                    raise CLIError("Query Symbol not found in args")
                 print(json.dumps(result, sort_keys=True, indent=2), file=self.output)
             elif args[0].startswith(query_symbol):
                 # print error message, user unsure of query shortcut usage
@@ -931,7 +931,7 @@ class AzInteractiveShell(object):
         except SystemExit as ex:
             self.last_exit_code = int(ex.code)
 
-    def progress_patch(self, *args, **kwargs):
+    def progress_patch(self, *_args, **_kwargs):
         """ forces to use the Shell Progress """
         from .progress import ShellProgressView
         self.cli_ctx.progress_controller.init_progress(ShellProgressView())
@@ -946,8 +946,10 @@ class AzInteractiveShell(object):
             self.command_table_thread = LoadCommandTableThread(self.restart_completer, self)
             self.command_table_thread.start()
             return
-        print_styled_text([(Style.ACTION, "A command preload mechanism was added to prevent lagging and command run errors.\n"
-                                          "You can skip preloading in a single pass by CTRL+C or turn it off by setting 'az config set interactive.enable_preloading=False'\n")])
+        print_styled_text([
+            (Style.ACTION, "A command preload mechanism was added to prevent lagging and command run errors.\n"
+                           "You can skip preloading in a single pass by CTRL+C or turn it off "
+                           "by setting 'az config set interactive.enable_preloading=False'\n")])
         already_prompted = False
         continue_loading = True
         # load command table
@@ -974,8 +976,9 @@ class AzInteractiveShell(object):
                 # if the customer presses Ctrl+C, break the loading loop
                 continue_loading = whether_continue_module_loading()
             if time_spent_on_loading > prompt_timeout_limit and not already_prompted:
-                print_styled_text([(Style.WARNING,
-                                    '\nLoading command table takes too long, please contact the Azure CLI team for help.')])
+                print_styled_text([
+                    (Style.WARNING,
+                     '\nLoading command table takes too long, please contact the Azure CLI team for help.')])
                 continue_loading = whether_continue_module_loading()
                 already_prompted = True
             # if the customer chooses not to continue loading, break the loading loop
@@ -1009,8 +1012,10 @@ class AzInteractiveShell(object):
 
             except AttributeError:
                 # when the user pressed Control D
-                # IDEA: Create learning mode, automatically create temp-resource-group when initialized and put all resources in this temp-resource-group automatically;
-                # IDEA: Automatically delete the whole temp-resource-group when the user logs out or when no operation is invoked for one hour.
+                # IDEA: Create learning mode, automatically create temp-resource-group when initialized
+                # and put all resources in this temp-resource-group automatically;
+                # IDEA: Automatically delete the whole temp-resource-group when the user logs out
+                # or when no operation is invoked for one hour.
                 # TODO: prompt a notice to ask if the user wants to delete all the resources created
                 break
             except (KeyboardInterrupt, ValueError):

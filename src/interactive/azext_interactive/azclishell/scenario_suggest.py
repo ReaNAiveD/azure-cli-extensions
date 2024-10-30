@@ -13,12 +13,14 @@ class ScenarioAutoSuggest(AutoSuggest):
     """Auto Suggest used in Scenario execution mode"""
 
     def __init__(self):
+        super().__init__()
         self.cur_sample = ''
         self.cur_command = ''
         # param_sample_value_map is the dictionary that has `key` with command params and `value` with <sample_value>
         self.param_sample_value_map = {}
         # when user input a value of a parameter,value will be stored in this map. Will be suggested in the scenario
-        # customized_cached_param_map is the dictionary that has `key` with <sample_value> of scenario commands or some `special global params` and `value` with the value that customer has entered
+        # customized_cached_param_map is the dictionary that has `key` with <sample_value> of scenario commands
+        # or some `special global params` and `value` with the value that customer has entered
         self.customized_cached_param_map = {}
         # Define some special global parameters which matches the param instead of sample value.
         # Tend to improve the suggestion rate when scenario is not strictly stylized
@@ -53,8 +55,9 @@ class ScenarioAutoSuggest(AutoSuggest):
         for part in command_text.split():
             if part.startswith('-'):
                 # if the parameter is a special global parameter, use the parameter itself as the key
-                if part in self.special_global_param_map.keys():
-                    # Because '--g' and '--resource-group' are the same parameter, we need to both support in the customized map
+                if part in self.special_global_param_map:
+                    # Because '--g' and '--resource-group' are the same parameter,
+                    # we need to both support in the customized map
                     special_global_param_list = self.special_global_param_map[part]
                     for param in special_global_param_list:
                         self.customized_cached_param_map[param] = ''
@@ -69,7 +72,7 @@ class ScenarioAutoSuggest(AutoSuggest):
                     cached_sample_value].strip()
             # Because '--g' and '--resource-group' are the same parameter, we need to both support in the customized map
             elif special_global_param_list:
-                for param in special_global_param_list:
+                for param in special_global_param_list:  # pylint: disable=not-an-iterable
                     self.customized_cached_param_map[param] += ' ' + part
                     self.customized_cached_param_map[param] = self.customized_cached_param_map[param].strip()
 
@@ -109,28 +112,29 @@ class ScenarioAutoSuggest(AutoSuggest):
                 # Find the parameter user is inputting and suggest the unfinished part
                 for param in unused_param:
                     if param.startswith(unfinished):
-                        unused_param.remove(param)
                         return Suggestion(param[len(unfinished):])
             elif unfinished == '':
-                # if last part is a not a parameter or the last part is a bool parameter and the value is empty, suggest the first unused parameter
+                # if last part is a not a parameter or the last part is a bool parameter and the value is empty,
+                # suggest the first unused parameter
                 if (not last_part.startswith('-')) or self.param_sample_value_map[last_part] == '':
                     for param in unused_param:
                         # the param is a special global parameter, such as '--location' and not given a customized value
-                        if param in self.special_global_param_map.keys() and self.param_sample_value_map[param].startswith('<'):
+                        if param in self.special_global_param_map \
+                                and self.param_sample_value_map[param].startswith('<'):
                             cached_param = param
                         else:
-                            # cached_param is either the sample values in scenarios, such as <RESOURCEGROUPNAME> or some special global params, such as '--location'
+                            # cached_param is either the sample values in scenarios,
+                            # such as <RESOURCEGROUPNAME> or some special global params, such as '--location'
                             cached_param = self.param_sample_value_map[param]
                         if cached_param:
-                            if cached_param in self.customized_cached_param_map.keys():
+                            if cached_param in self.customized_cached_param_map:
                                 value = self.customized_cached_param_map[cached_param]
                             elif cached_param.startswith('<') or cached_param.startswith('-'):
                                 value = ''
                             else:
                                 value = cached_param
                             return Suggestion(' '.join([param, value]))
-                        else:
-                            return Suggestion(param)
+                        return Suggestion(param)
 
         # If the user hasn't finished the command part, suggest the whole command
         elif self.cur_command.startswith(user_input):

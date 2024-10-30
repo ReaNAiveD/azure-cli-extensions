@@ -13,7 +13,6 @@ from azure.cli.core import telemetry
 from azure.cli.core import __version__ as version
 from azure.cli.core.style import print_styled_text, Style
 from prompt_toolkit.history import FileHistory
-from .scenario_search import SearchThread
 
 
 class RecommendType(int, Enum):
@@ -240,7 +239,7 @@ class RecommendPath:
         return self.commands[-top_num:]
 
 
-def get_recommend_from_api(command_list, type, top_num=5, error_info=None):  # pylint: disable=unused-argument
+def get_recommend_from_api(command_list, command_type, top_num=5, error_info=None):  # pylint: disable=unused-argument
     """query next command from web api"""
     import requests
     url = "https://cli-recommendation.azurewebsites.net/api/RecommendationService"
@@ -249,15 +248,15 @@ def get_recommend_from_api(command_list, type, top_num=5, error_info=None):  # p
     hashed_user_id = hashlib.sha256(user_id.encode('utf-8')).hexdigest()
     payload = {
         "command_list": json.dumps(command_list),
-        "type": type,
+        "type": command_type,
         "top_num": top_num,
         'error_info': error_info,
         'cli_version': version,
         'user_id': hashed_user_id
     }
 
-    correlation_id = telemetry._session.correlation_id
-    subscription_id = telemetry._get_azure_subscription_id()
+    correlation_id = telemetry._session.correlation_id  # pylint: disable=protected-access
+    subscription_id = telemetry._get_azure_subscription_id()  # pylint: disable=protected-access
     if telemetry.is_telemetry_enabled():
         if correlation_id:
             payload['correlation_id'] = correlation_id
@@ -284,16 +283,18 @@ def get_recommend_from_api(command_list, type, top_num=5, error_info=None):  # p
     return recommends, api_version
 
 
-def send_feedback(option_idx, latest_commands, processed_exception=None, recommends=None, accepted_recommend=None,
+def send_feedback(option_idx, latest_commands, processed_exception=None, recommends=None, *, accepted_recommend=None,
                   api_version=None, request_type=RecommendType.All):
     # initialize feedback data
-    # If you want to add a new property to the feedback, please initialize it here in advance and place it with 'None' to prevent parameter loss due to parsing errors.
+    # If you want to add a new property to the feedback,
+    # please initialize it here in advance and place it with 'None' to prevent parameter loss due to parsing errors.
     feedback_data = {"request_type": None, "option": None, "trigger_commands": None, "error_info": None,
                      "recommendations_list": None, "recommendations_source_list": None,
                      "recommendations_type_list": None, "accepted_recommend_source": None,
                      "accepted_recommend_type": None, "accepted_recommend": None, "is_personalized": None}
 
-    # request_type is the type of recommendation mode, 1 means recommend all tyes of recommendations of command, scenario and solution
+    # request_type is the type of recommendation mode,
+    # 1 means recommend all tyes of recommendations of command, scenario and solution
     feedback_data['request_type'] = request_type
     # option is the index of the recommended command that user chooses.
     # 'a' means commands while 'b' means scenarios, such as 'a1'
@@ -416,7 +417,8 @@ def _get_command_sample(command):
 def _format_command_sample(command_sample):
     """
     Format command sample in the style of `az xxx --name <appServicePlan>`.
-    if the parameter dose not have $ to show it is customisable, it will return the raw command sample value. For example: -o tsv
+    if the parameter does not have $ to show it is customisable, it will return the raw command sample value.
+    For example: -o tsv
     Also return the arguments used in the sample.
     """
     if not command_sample:

@@ -43,6 +43,7 @@ class MatchRule(int, Enum):
 
 
 class SearchThread(threading.Thread):
+    # pylint: disable=too-many-positional-arguments
     def __init__(self, cli_ctx, keywords, search_path, executing_command, on_prepared_callback):
         super().__init__()
         self.cli_ctx = cli_ctx
@@ -67,7 +68,9 @@ class SearchThread(threading.Thread):
             self.result = "Connection Error. Please check your network connection."
 
 
-# copied from azext_scenario_guide.requests.search_online: https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src/scenario-guide/azext_scenario_guide/requests.py#L13
+# copied from azext_scenario_guide.requests.search_online:
+# https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src/scenario-guide
+# /azext_scenario_guide/requests.py#L13
 def online_search(keyword, scope=SearchScope.All, match_rule=MatchRule.All, top=5):
     """Search related e2e scenarios"""
     import requests
@@ -97,7 +100,9 @@ def online_search(keyword, scope=SearchScope.All, match_rule=MatchRule.All, top=
     return results, api_version
 
 
-# # copied from scenario_guide/azext_scenario_guide.custom._show_search_item: https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src/scenario-guide/azext_scenario_guide/custom.py#L52
+# copied from scenario_guide/azext_scenario_guide.custom._show_search_item:
+# https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src/scenario-guide
+# /azext_scenario_guide/custom.py#L52
 def show_search_item(results):
     """
     Display searched scenarios in following format.
@@ -148,7 +153,9 @@ def show_search_item(results):
     print()
 
 
-# copied from scenario_guide/azext_scenario_guide.custom._match_result_highlight: https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src/scenario-guide/azext_scenario_guide/custom.py#L129
+# copied from scenario_guide/azext_scenario_guide.custom._match_result_highlight:
+# https://github.com/Azure/azure-cli-extensions/blob/7365e1ba3cc858b075cbc98aeb4e5ce5c91db745/src
+# /scenario-guide/azext_scenario_guide/custom.py#L129
 def _match_result_highlight(highlight_content: str) -> list:
     """Build `styled_text` from content with `<em></em>` as highlight mark"""
     styled_description = []

@@ -37,7 +37,7 @@ CONFIG_FILE_NAME = 'shell-config'
 GESTURE_LENGTH = max(len(key) for key in GESTURE_INFO)
 
 
-class Configuration(object):
+class Configuration:
     """ configuration for program """
     BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True,
                       '0': False, 'no': False, 'false': False, 'off': False,

@@ -54,6 +54,7 @@ class AzCompleter(Completer):
     """ Completes Azure CLI commands """
 
     def __init__(self, shell_ctx, commands, global_params=True):
+        super().__init__()
         self.shell_ctx = shell_ctx
         self.started = False
 
@@ -186,22 +187,17 @@ class AzCompleter(Completer):
         self.shell_ctx.cli_ctx.raise_event(EVENT_INTERACTIVE_POST_SUB_TREE_CREATE, subtree=self.subtree)
         self.complete_command = not self.subtree.children
 
-        for comp in self.gen_recommend_completion(text):
-            yield comp
+        yield from self.gen_recommend_completion(text)
 
-        for comp in sort_completions(self.gen_cmd_and_param_completions()):
-            yield comp
+        yield from sort_completions(self.gen_cmd_and_param_completions())
 
         if self.scenario_recommender_enabled:
-            for comp in self.gen_recommended_scenario(text):
-                yield comp
+            yield from self.gen_recommended_scenario(text)
 
-        for comp in sort_completions(self.gen_global_params_and_arg_completions()):
-            yield comp
+        yield from sort_completions(self.gen_global_params_and_arg_completions())
 
         if self.complete_command and self.cmdtab and self.leftover_args and self.leftover_args[-1].startswith('-'):
-            for comp in sort_completions(self.gen_dynamic_completions(text)):
-                yield comp
+            yield from sort_completions(self.gen_dynamic_completions(text))
 
     def gen_enum_completions(self, arg_name):
         """ generates dynamic enumeration completions """
@@ -251,8 +247,7 @@ class AzCompleter(Completer):
             # command table specific name
             arg_name = self.get_arg_name(param)
 
-            for comp in self.gen_enum_completions(arg_name):
-                yield comp
+            yield from self.gen_enum_completions(arg_name)
 
             parsed_args = self.mute_parse_args(text)
 
@@ -274,8 +269,7 @@ class AzCompleter(Completer):
                             pass  # other completion method used
 
                 for comp in completions:
-                    for completion in self.process_dynamic_completion(comp):
-                        yield completion
+                    yield from self.process_dynamic_completion(comp)
 
         # if the user isn't logged in
         except Exception:  # pylint: disable=broad-except
@@ -313,7 +307,8 @@ class AzCompleter(Completer):
             return
         recommend_result = self.shell_ctx.recommender.get_scenarios() or []
         for idx, rec in enumerate(recommend_result):
-            # '::[num]' is the statement to select the recommended scenarios. The Completion will replace the input with '::[num]', which will execute the specific scenario
+            # '::[num]' is the statement to select the recommended scenarios.
+            # The Completion will replace the input with '::[num]', which will execute the specific scenario
             yield Completion(
                 '::' + str(idx + 1), -len(text),
                 display_meta=f'{rec["scenario"]} ({len(rec["nextCommandSet"])} Commands)',

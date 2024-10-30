@@ -8,7 +8,7 @@ import azure.cli.core.telemetry as telemetry_core
 
 
 # pylint:disable=too-few-public-methods
-class Telemetry(object):
+class Telemetry:
     """ Handles Interactive Telemetry """
 
     def __init__(self):
@@ -117,7 +117,7 @@ def track_cli_commands_used():
 
 def get_error_info():
     return {
-        'result': telemetry_core._session.result,
-        'result_summary': telemetry_core._session.result_summary,
-        'error_type': telemetry_core._session.error_type,
+        'result': telemetry_core._session.result,   # pylint: disable=protected-access
+        'result_summary': telemetry_core._session.result_summary,   # pylint: disable=protected-access
+        'error_type': telemetry_core._session.error_type,   # pylint: disable=protected-access
     }

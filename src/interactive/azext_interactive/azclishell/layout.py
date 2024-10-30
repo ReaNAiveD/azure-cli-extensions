@@ -26,8 +26,8 @@ from .progress import get_progress_message, get_done
 MAX_COMPLETION = 16
 
 
-# pylint:disable=too-few-public-methods
-class LayoutManager(object):
+# pylint:disable=too-few-public-methods, too-many-instance-attributes
+class LayoutManager:
     """ store information and conditions for the layout """
 
     def __init__(self, shell_ctx, prompt_prefix='', toolbar_hint=''):
@@ -127,7 +127,8 @@ class LayoutManager(object):
 
     def create_layout(self, exam_lex, toolbar_lex, scenario_lex):
         """ creates the layout """
-        lexer, exam_lex, toolbar_lex, scenario_lex = get_lexers(self.shell_ctx.lexer, exam_lex, toolbar_lex, scenario_lex)
+        lexer, exam_lex, toolbar_lex, scenario_lex = \
+            get_lexers(self.shell_ctx.lexer, exam_lex, toolbar_lex, scenario_lex)
 
         if not any(isinstance(processor, DefaultPrompt) for processor in self.input_processors):
             self.input_processors.append(DefaultPrompt(self.get_prompt_tokens))

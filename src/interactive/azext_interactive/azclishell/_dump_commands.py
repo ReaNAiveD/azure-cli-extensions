@@ -29,7 +29,7 @@ class AzInteractiveCommandsLoader(MainCommandsLoader):  # pylint: disable=too-fe
             loader.command_table = self.command_table
             loader._update_command_definitions()  # pylint: disable=protected-access
 
-    def load_arguments(self, _):
+    def load_arguments(self, command=None):
         from azure.cli.core.commands.parameters import resource_group_name_type, get_location_type, deployment_name_type
         from azure.cli.core import ArgumentsContext
 
@@ -45,8 +45,8 @@ class AzInteractiveCommandsLoader(MainCommandsLoader):  # pylint: disable=too-fe
                 c.argument('cmd', ignore_type)
 
             # load each command's arguments via reflection
-            for _, command in self.command_table.items():
-                command.load_arguments()
+            for _, command_item in self.command_table.items():
+                command_item.load_arguments()
 
             for loader in command_loaders:
                 loader.skip_applicability = True
@@ -64,7 +64,7 @@ class AzInteractiveCommandsLoader(MainCommandsLoader):  # pylint: disable=too-fe
 
 
 # pylint: disable=too-few-public-methods
-class FreshTable(object):
+class FreshTable:
     """
     this class generates and dumps the fresh command table into a file
     as well as installs all the modules
@@ -103,7 +103,7 @@ class FreshTable(object):
                 parameter_metadata = {}
                 for arg in cmd.arguments.values():
                     options = {
-                        'name': [name for name in arg.options_list],
+                        'name': list(arg.options_list),
                         'required': REQUIRED_TAG if arg.type.settings.get('required') else '',
                         'help': arg.type.settings.get('help') or ''
                     }

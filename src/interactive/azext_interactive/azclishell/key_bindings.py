@@ -16,7 +16,7 @@ from . import telemetry
 
 
 # pylint:disable=too-few-public-methods
-class InteractiveKeyBindings(object):
+class InteractiveKeyBindings:
 
     def __init__(self, shell_ctx):
 

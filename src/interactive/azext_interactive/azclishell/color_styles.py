@@ -8,6 +8,7 @@ from pygments.token import Token  # pylint: disable=import-error
 from prompt_toolkit.styles import style_from_dict  # pylint: disable=import-error
 
 
+# pylint: disable=too-many-positional-arguments
 def color_mapping(curr_completion, completion, prompt, command, subcommand,
                   param, text, line, example, toolbar):
 
